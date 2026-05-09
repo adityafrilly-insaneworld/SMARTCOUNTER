@@ -237,9 +237,9 @@ body{
   filter:blur(100px);
   will-change:transform;
 }
-.orb1{width:700px;height:700px;top:-200px;left:-150px;background:radial-gradient(circle,var(--orb1-clr),transparent 70%);animation:orbFloat1 22s linear infinite}
-.orb2{width:600px;height:600px;bottom:-100px;right:-100px;background:radial-gradient(circle,var(--orb2-clr),transparent 70%);animation:orbFloat2 28s linear infinite}
-.orb3{width:500px;height:500px;top:40%;left:40%;background:radial-gradient(circle,var(--orb3-clr),transparent 70%);animation:orbFloat3 18s linear infinite}
+.orb1{width:700px;height:700px;top:-200px;left:-150px;background:radial-gradient(circle,var(--orb1-clr),transparent 70%);animation:orbFloat1 40s linear infinite}
+.orb2{width:600px;height:600px;bottom:-100px;right:-100px;background:radial-gradient(circle,var(--orb2-clr),transparent 70%);animation:orbFloat2 50s linear infinite}
+.orb3{width:500px;height:500px;top:40%;left:40%;background:radial-gradient(circle,var(--orb3-clr),transparent 70%);animation:orbFloat3 35s linear infinite}
 @keyframes orbFloat1{0%,100%{transform:translate(0,0) scale(1)}33%{transform:translate(80px,60px) scale(1.08)}66%{transform:translate(-40px,100px) scale(.95)}}
 @keyframes orbFloat2{0%,100%{transform:translate(0,0) scale(1)}40%{transform:translate(-100px,-80px) scale(1.12)}70%{transform:translate(60px,-40px) scale(.9)}}
 @keyframes orbFloat3{0%,100%{transform:translate(-50%,-50%) scale(1)}50%{transform:translate(-50%,-50%) scale(1.2)}}
@@ -311,7 +311,6 @@ body{
   color:var(--clock-clr);
   background:var(--clock-bg);border:1px solid var(--clock-border);
   border-radius:8px;padding:6px 14px;min-width:80px;text-align:center;
-  backdrop-filter:blur(8px);
 }
 .ctrl-btn{
   width:clamp(32px,2.8vw,40px);height:clamp(32px,2.8vw,40px);
@@ -319,7 +318,7 @@ body{
   background:var(--ctrl-bg);color:var(--ctrl-clr);
   display:flex;align-items:center;justify-content:center;
   cursor:pointer;font-size:clamp(13px,1.2vw,16px);
-  transition:all .15s;backdrop-filter:blur(8px);
+  transition:all .15s;
 }
 .ctrl-btn:hover{background:var(--glass-border);color:var(--text-primary)}
 
@@ -330,7 +329,6 @@ body{
   border-radius:20px;padding:4px 10px;
   font-size:clamp(10px,.85vw,12px);font-weight:700;
   color:var(--text-secondary);cursor:pointer;
-  backdrop-filter:blur(8px);
   transition:all .15s;
 }
 .theme-ctrl:hover{background:var(--glass-border);color:var(--text-primary)}
@@ -452,7 +450,7 @@ body{
   font-size:clamp(10px,.85vw,12px);
   padding:3px 10px;border-radius:20px;
   background:var(--glass-bg);border:1px solid var(--glass-border);
-  color:var(--text-secondary);font-weight:600;backdrop-filter:blur(6px);
+  color:var(--text-secondary);font-weight:600;
 }
 
 /* vertical right progress bar */
@@ -560,7 +558,7 @@ body{
   border-radius:10px;padding:7px 16px;
   display:flex;align-items:center;gap:12px;
   overflow:hidden;height:36px;
-  backdrop-filter:blur(12px);
+  /* removed backdrop-filter — too heavy for Smart TV GPU */
 }
 .ticker-badge{
   font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:1px;
@@ -571,10 +569,18 @@ body{
 .ticker-items{
   display:flex;gap:40px;
   position:absolute;top:0;left:0;white-space:nowrap;
-  animation:tickerScroll 30s linear infinite;
+  /* GPU-composited layer — no repaints during scroll */
+  will-change:transform;
+  transform:translate3d(0,0,0);
+  /* animation driven by JS rAF loop, not CSS animation — smoother on old browsers */
 }
-.ticker-items:hover{animation-play-state:paused}
-@keyframes tickerScroll{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+/* CSS fallback animation only — overridden by JS rAF on capable devices */
+.ticker-items.css-anim{animation:tickerScroll 40s linear infinite}
+.ticker-items.css-anim:hover{animation-play-state:paused}
+@keyframes tickerScroll{
+  0%{transform:translate3d(0,0,0)}
+  100%{transform:translate3d(var(--ticker-w),0,0)}
+}
 .ticker-item{display:inline-flex;align-items:center;gap:8px;font-size:12px;color:var(--text-secondary);font-weight:500}
 .ticker-item-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0}
 .ticker-item-cat{font-weight:700;color:var(--text-primary)}
@@ -1092,6 +1098,35 @@ function showSbToast(msg){
 }
 
 // ── Ticker ───────────────────────────────────────────────
+// ── Ticker — rAF-driven, zero DOM rebuild on Firebase updates ───────────
+let tickerRAF   = null;   // requestAnimationFrame handle
+let tickerX     = 0;      // current X position in pixels
+let tickerW     = 0;      // half-width of duplicated content (the loop point)
+let tickerSpeed = 60;     // pixels per second — tunable
+let tickerPaused= false;
+let tickerLastT = null;
+let tickerSnap  = '';     // last rendered content snapshot (avoid needless rebuilds)
+
+function tickerStep(ts){
+  if(!tickerPaused && tickerW > 0){
+    if(tickerLastT !== null){
+      const dt = Math.min(ts - tickerLastT, 50); // cap at 50ms (handles tab-switch lag)
+      tickerX -= tickerSpeed * dt / 1000;
+      if(tickerX <= -tickerW) tickerX += tickerW; // seamless loop
+    }
+    tickerLastT = ts;
+    const el = document.getElementById('ticker-items');
+    if(el) el.style.transform = `translate3d(${tickerX}px,0,0)`;
+  }
+  tickerRAF = requestAnimationFrame(tickerStep);
+}
+
+function startTickerRAF(){
+  if(tickerRAF) cancelAnimationFrame(tickerRAF);
+  tickerLastT = null;
+  tickerRAF   = requestAnimationFrame(tickerStep);
+}
+
 function buildTicker(reg, ta){
   const el = document.getElementById('ticker-items');
   if(!el) return;
@@ -1101,38 +1136,48 @@ function buildTicker(reg, ta){
     .sort((a,b) => new Date(b.created_at) - new Date(a.created_at))
     .slice(0, 24);
 
+  // Build content string
+  let contentHTML;
   if(!recent.length){
-    el.innerHTML = `<span class="ticker-item" style="font-style:italic;opacity:.4">
+    contentHTML = `<span class="ticker-item" style="font-style:italic;opacity:.4">
       Belum ada data register untuk tahun ${ta} — buka Smart Counter untuk menambahkan data
     </span>`;
-    return;
+  } else {
+    const item = r => {
+      const k    = r.kategori;
+      const d    = r.tanggal ? new Date(r.tanggal+'T00:00:00') : null;
+      const dStr = d ? `${d.getDate()} ${BN_SHORT[d.getMonth()]} ${d.getFullYear()}` : '—';
+      const raw  = r[KAT_FLD[k]] || '';
+      const txt  = raw.length > 35 ? raw.slice(0,35)+'…' : raw;
+      return `<span class="ticker-item">
+        <span class="ticker-item-dot" style="background:${KAT_CLR[k]}"></span>
+        <span class="ticker-item-cat">${KAT_IC[k]} ${KAT_LBL[k]}</span>
+        <span class="ticker-sep">•</span>
+        <span class="ticker-num">No.${String(r.nomor_urut).padStart(3,'0')}</span>
+        ${txt ? `<span class="ticker-txt">${esc(txt)}</span>` : ''}
+        <span class="ticker-date">${dStr}</span>
+      </span>
+      <span class="ticker-item-sep">⬥</span>`;
+    };
+    contentHTML = recent.map(item).join('');
   }
 
-  const item = r => {
-    const k    = r.kategori;
-    const d    = r.tanggal ? new Date(r.tanggal+'T00:00:00') : null;
-    const dStr = d ? `${d.getDate()} ${BN_SHORT[d.getMonth()]} ${d.getFullYear()}` : '—';
-    const raw  = r[KAT_FLD[k]] || '';
-    const txt  = raw.length > 35 ? raw.slice(0,35)+'…' : raw;
-    return `<span class="ticker-item">
-      <span class="ticker-item-dot" style="background:${KAT_CLR[k]}"></span>
-      <span class="ticker-item-cat">${KAT_IC[k]} ${KAT_LBL[k]}</span>
-      <span class="ticker-sep">•</span>
-      <span class="ticker-num">No.${String(r.nomor_urut).padStart(3,'0')}</span>
-      ${txt ? `<span class="ticker-txt">${esc(txt)}</span>` : ''}
-      <span class="ticker-date">${dStr}</span>
-    </span>
-    <span class="ticker-item-sep">⬥</span>`;
-  };
+  // Only rebuild DOM if content actually changed — avoids animation stutter
+  const snap = contentHTML + ta;
+  if(snap === tickerSnap) return;
+  tickerSnap = snap;
 
-  const html = recent.map(item).join('');
-  el.innerHTML = html + html;
+  // Duplicate for seamless loop
+  el.innerHTML = contentHTML + contentHTML;
 
-  // dynamic speed based on content width
+  // Measure half-width after paint, then calibrate speed
   requestAnimationFrame(() => {
-    const trackW = el.scrollWidth / 2;
-    const speed  = Math.max(20, trackW / 50);
-    el.style.animationDuration = `${speed}s`;
+    tickerW = el.scrollWidth / 2;
+    // Scale speed: longer content scrolls faster so readability stays constant
+    // ~80px/s base, max 120px/s
+    tickerSpeed = Math.min(120, Math.max(60, tickerW / 8));
+    // Reset position smoothly — don't jump back to 0 if already scrolling
+    if(tickerX < -tickerW || tickerX > 0) tickerX = 0;
   });
 }
 
@@ -1229,6 +1274,17 @@ function init(){
   applyTheme(curTheme, false);
   updateClock();
   setInterval(updateClock, 1000);
+
+  // Start GPU-composited ticker loop immediately — runs independently of Firebase
+  startTickerRAF();
+
+  // Pause ticker on hover
+  const track = document.getElementById('ticker-track');
+  if(track){
+    track.addEventListener('mouseenter', ()=>{ tickerPaused=true; });
+    track.addEventListener('mouseleave', ()=>{ tickerPaused=false; tickerLastT=null; });
+  }
+
   startFbListener();
   if(window.opener){
     setTimeout(()=>document.documentElement.requestFullscreen().catch(()=>{}), 400);
