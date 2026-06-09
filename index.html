@@ -763,6 +763,18 @@ tr.tbl-empty td{
   .page-body{padding:16px}
   .topbar{padding:0 16px}
 }
+@media(max-width:600px){
+  .topbar-actions .btn span{display:none}
+  .topbar-actions .btn{padding:6px 10px}
+  .conn-status span:not(.conn-dot){display:none}
+  .conn-status{padding:3px 6px}
+  .topbar-title .ttl-sub{display:none !important}
+  .overlay{padding:8px !important}
+}
+@media(max-width:400px){
+  .hukum-grid{grid-template-columns:1fr !important}
+  .ms-row{grid-template-columns:1fr !important}
+}
 @media print{
   .sidebar,.topbar,.tbl-toolbar,.ibtns,.btn,.tbl-foot,.qadd-card,.mob-menu{display:none!important}
   .main{margin-left:0}
@@ -864,8 +876,8 @@ tr.tbl-empty td{
     </div>
     <div class="topbar-actions">
       <div class="conn-status conn-connecting" id="conn-status"><span class="conn-dot">🟡</span><span>Menghubungkan...</span></div>
-      <button class="btn btn-sm btn-ghost" onclick="window.open('SmartCounter_scoreboard.html','_blank')" title="Buka Scoreboard TV">📺 Scoreboard</button>
-      <button class="btn btn-sm btn-ghost" onclick="exportDB()" title="Export JSON">📤 Backup</button>
+      <button class="btn btn-sm btn-ghost" onclick="window.open('SmartCounter_scoreboard.html','_blank')" title="Buka Scoreboard TV">📺 <span>Scoreboard</span></button>
+      <button class="btn btn-sm btn-ghost" onclick="exportDB()" title="Export JSON">📤 <span>Backup</span></button>
       <button class="theme-icon-btn" id="theme-btn" onclick="toggleTheme()" title="Ganti tema gelap/terang" aria-label="Toggle tema">
         <div class="theme-icon-wrap" id="theme-icon-wrap">
           <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -879,7 +891,7 @@ tr.tbl-empty td{
           </svg>
         </div>
       </button>
-      <button class="btn btn-sm btn-primary" onclick="openAdd(null)" id="topbar-add-btn">＋ Tambah</button>
+      <button class="btn btn-sm btn-primary" onclick="openAdd(null)" id="topbar-add-btn">＋ <span>Tambah</span></button>
     </div>
   </div>
 
