@@ -670,10 +670,27 @@ body.idle .ctrl-btn,body.idle .theme-ctrl,body.idle .footer-hint{opacity:0;trans
    RESPONSIVE
 ══════════════════════════════════════════════════════ */
 @media(max-width:900px){.hukum-row{grid-template-columns:repeat(2,1fr)}}
-@media(max-width:600px){
+@media(max-width:768px){
+  html,body{overflow:auto !important;height:auto !important}
+  .stage{height:auto !important;min-height:100vh;overflow:visible !important;padding:12px;gap:16px}
   .surat-row{grid-template-columns:1fr}
+  .s-card-count{font-size:clamp(64px,12vw,110px);margin:10px 0}
+  .s-card{padding:16px 20px}
+}
+@media(max-width:600px){
   .hukum-row{grid-template-columns:repeat(2,1fr)}
   .header-center{display:none}
+  .header{flex-direction:column;align-items:flex-start;gap:10px}
+  .header-left{width:100%}
+  .header-right{width:100%;justify-content:space-between;flex-wrap:wrap;gap:8px}
+  .header-right .ctrl-btn[title="Tutup"]{display:none !important}
+  .footer{flex-direction:column;align-items:stretch;gap:10px}
+  .footer-info{flex-direction:column;align-items:flex-start;gap:6px;width:100%}
+  .total-pill{width:100%;justify-content:center}
+  .footer-hint{width:100%;justify-content:center}
+}
+@media(max-width:480px){
+  .hukum-row{grid-template-columns:1fr !important}
 }
 </style>
 </head>
