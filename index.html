@@ -1929,7 +1929,7 @@ window.simpanReg=async function(){
       ...old,
       tanggal:tgl,bulan:bln,uraian:ur,keterangan:ket,
       [k.f]:f3,
-      has_file:hf,file_name:fn,file_type:ft,file_size:fs
+      has_file:hf||false,file_name:fn||null,file_type:ft||null,file_size:fs||null
     });
     db.register[i]=updated;
     await saveOneReg(updated);
