@@ -361,23 +361,26 @@ img{display:block}
 .qadd-hd{display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap}
 .qadd-title{font-size:14px;font-weight:700;color:var(--t1)}
 .qadd-sub{font-size:12px;color:var(--t3);margin-top:1px}
-.kat-pills{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px}
+.qadd-group-lbl{font-size:11.5px;font-weight:700;color:var(--t3);letter-spacing:0.3px;margin:0 0 10px 2px}
+.kat-pills{display:grid;grid-template-columns:repeat(auto-fit, minmax(85px, 1fr));gap:12px;margin-bottom:20px}
 .kat-pill{
-  padding:5px 12px;border-radius:20px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:14px 8px;border-radius:12px;gap:8px;
   border:1.5px solid var(--bdr);
   background:var(--card2);color:var(--t2);
-  font-size:12px;font-weight:600;cursor:pointer;
-  transition:all .13s;
+  cursor:pointer;transition:all .2s ease;
 }
-.kat-pill:hover{border-color:var(--accent);color:var(--accent)}
-.kat-pill.on{color:#fff;border-color:transparent}
-.kat-pill.on.sk{background:var(--sk)}
-.kat-pill.on.kl{background:var(--kl)}
-.kat-pill.on.ba{background:var(--ba)}
-.kat-pill.on.ph{background:var(--ph)}
-.kat-pill.on.pk{background:var(--pk)}
-.kat-pill.on.pm{background:var(--pm)}
-.kat-pill.on.ps{background:var(--ps)}
+.kat-pill-ic{font-size:24px;line-height:1}
+.kat-pill-txt{font-size:11.5px;font-weight:600;text-align:center;line-height:1.25}
+.kat-pill:hover{border-color:var(--accent);transform:translateY(-2px);box-shadow:0 4px 12px rgba(0,0,0,.04)}
+.kat-pill.on{color:#fff;border-color:transparent;transform:translateY(-2px);box-shadow:0 4px 12px rgba(0,0,0,.1)}
+.kat-pill.on.sk{background:var(--sk);box-shadow:0 6px 16px rgba(29,112,235,.2)}
+.kat-pill.on.kl{background:var(--kl);box-shadow:0 6px 16px rgba(13,158,110,.2)}
+.kat-pill.on.ba{background:var(--ba);box-shadow:0 6px 16px rgba(124,58,237,.2)}
+.kat-pill.on.ph{background:var(--ph);box-shadow:0 6px 16px rgba(147,51,234,.2)}
+.kat-pill.on.pk{background:var(--pk);box-shadow:0 6px 16px rgba(219,39,119,.2)}
+.kat-pill.on.pm{background:var(--pm);box-shadow:0 6px 16px rgba(8,145,178,.2)}
+.kat-pill.on.ps{background:var(--ps);box-shadow:0 6px 16px rgba(220,38,38,.2)}
 .qadd-actions{display:flex;gap:8px;flex-wrap:wrap}
 
 /* ─── FORMS ─── */
@@ -748,7 +751,35 @@ tr.tbl-empty td{
   .kfg-grid{grid-template-columns:1fr 1fr}
   .lap-grid{grid-template-columns:1fr}
 }
+
+/* ─── MOBILE QADD POPUP BASE ─── */
+.qadd-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 999; backdrop-filter: blur(3px); opacity: 0; transition: opacity 0.3s; }
+.qadd-overlay.open { display: block; opacity: 1; }
+.mob-fab-bar { display: none; }
+.qadd-close { display: none; background: transparent; border: none; font-size: 20px; color: var(--t2); cursor: pointer; }
+
 @media(max-width:900px){
+  .mob-fab-bar {
+    display: flex; position: fixed; bottom: 20px; left: 20px; right: 20px;
+    background: var(--accent); color: #fff; border-radius: 100px; padding: 12px 20px;
+    align-items: center; justify-content: space-between; box-shadow: 0 8px 24px rgba(29, 112, 235, 0.4); z-index: 998;
+    cursor: pointer;
+  }
+  .mob-fab-text { font-weight: 600; font-size: 15px; }
+  .mob-fab-btn {
+    background: #fff; color: var(--accent); border: none; border-radius: 50%; width: 36px; height: 36px;
+    font-size: 18px; display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 0 16px rgba(255,255,255,0.6);
+  }
+  .qadd-card {
+    position: fixed !important; bottom: 0; left: 0; right: 0; z-index: 1000;
+    transform: translateY(110%); transition: transform 0.35s cubic-bezier(0.25,1,0.5,1);
+    border-radius: 24px 24px 0 0; background: var(--bg); max-height: 85vh; overflow-y: auto;
+    margin: 0 !important; box-shadow: 0 -8px 32px rgba(0,0,0,0.2);
+  }
+  .qadd-card.open { transform: translateY(0); }
+  .qadd-hd { display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: nowrap !important; }
+  .qadd-close { display: block; padding: 4px; }
   :root{--sidebar-w:0px}
   .sidebar{transform:translateX(-240px);width:240px}
   .sidebar.open{transform:translateX(0)}
@@ -783,12 +814,12 @@ tr.tbl-empty td{
   .overlay{padding:8px !important}
   .bdg-txt{display:none}
   .bdg-txt-short{display:inline}
-  .pill-txt{display:none}
-  .pill-txt-short{display:inline}
-  .kat-pill{padding:4px 8px !important;font-size:11px !important}
   .qadd-card{padding:12px 14px !important;margin-bottom:16px}
   .qadd-hd{margin-bottom:12px}
-  .kat-pills{gap:5px;margin-bottom:12px}
+  .kat-pills{grid-template-columns:repeat(auto-fit, minmax(75px, 1fr));gap:8px;margin-bottom:16px}
+  .kat-pill{padding:10px 6px !important;gap:6px}
+  .kat-pill-ic{font-size:20px}
+  .kat-pill-txt{font-size:10.5px}
   .qadd-card .fc{font-size:16px}
   .qadd-actions{flex-direction:column}
   .qadd-actions .btn{width:100%;min-width:0}
@@ -1047,10 +1078,11 @@ tr.tbl-empty td{
               <div class="qadd-title">➕ Tambah Register Baru</div>
               <div class="qadd-sub">Pilih kategori dokumen, isi data, simpan</div>
             </div>
+            <button class="qadd-close" onclick="toggleQaddPopup()" title="Tutup">✕</button>
           </div>
 
           <!-- category pill selector -->
-          <div class="kat-pills" id="qadd-pills"></div>
+          <div id="qadd-pills"></div>
 
           <div id="qadd-body" style="display:none">
             <div id="df-alert" class="alrt hide"></div>
@@ -1310,6 +1342,12 @@ tr.tbl-empty td{
   </div>
 </div>
 
+<!-- Mobile Floating Bottom Bar & Overlay -->
+<div class="qadd-overlay" id="qadd-overlay" onclick="toggleQaddPopup()"></div>
+<div class="mob-fab-bar" id="mob-fab-bar" onclick="toggleQaddPopup()">
+  <div class="mob-fab-text">Tambah Register Baru</div>
+  <div class="mob-fab-btn">➕</div>
+</div>
 <div class="toasts" id="toasts"></div>
 <div class="sb-backdrop" id="sb-backdrop" onclick="closeSidebar()"></div>
 
@@ -1644,9 +1682,18 @@ function renderDash(){
 let qaddKat='';
 function buildQaddPills(){
   const pills=document.getElementById('qadd-pills');if(!pills)return;
-  pills.innerHTML=ALL_KAT.map(k=>`
+  const grp1 = ['SK','KL','BA'];
+  const grp2 = ['PH','PK','PM','PS'];
+  const mapBtn = k => `
     <button class="kat-pill ${qaddKat===k?'on '+k.toLowerCase():''}" onclick="selectQaddKat('${k}')">
-      ${KAT[k].ic} <span class="pill-txt">${KAT[k].lbl}</span><span class="pill-txt-short">${k}</span></button>`).join('');
+      <div class="kat-pill-ic">${KAT[k].ic}</div><div class="kat-pill-txt">${KAT[k].lbl}</div></button>`;
+  
+  pills.innerHTML = `
+    <div class="qadd-group-lbl">Administrasi Umum</div>
+    <div class="kat-pills" style="margin-bottom:24px">${grp1.map(mapBtn).join('')}</div>
+    <div class="qadd-group-lbl">Produk Hukum Desa</div>
+    <div class="kat-pills" style="margin-bottom:0">${grp2.map(mapBtn).join('')}</div>
+  `;
 }
 window.selectQaddKat=function(k){
   qaddKat=k;buildQaddPills();
@@ -1679,6 +1726,19 @@ window.resetDf=function(){
   document.getElementById('df-ur').value='';
   document.getElementById('df-tgl').value=new Date().toISOString().split('T')[0];
   document.getElementById('df-alert').className='alrt hide';
+  closeQaddPopup();
+};
+window.toggleQaddPopup=function(){
+  const modal = document.querySelector('.qadd-card');
+  const overlay = document.getElementById('qadd-overlay');
+  if(modal) modal.classList.toggle('open');
+  if(overlay) overlay.classList.toggle('open');
+};
+window.closeQaddPopup=function(){
+  const modal = document.querySelector('.qadd-card');
+  const overlay = document.getElementById('qadd-overlay');
+  if(modal) modal.classList.remove('open');
+  if(overlay) overlay.classList.remove('open');
 };
 
 // ─── REGISTER PAGE BUILDER ───────────────────────
