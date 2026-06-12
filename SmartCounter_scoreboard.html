@@ -670,6 +670,11 @@ body.idle .ctrl-btn,body.idle .theme-ctrl,body.idle .footer-hint{opacity:0;trans
    RESPONSIVE
 ══════════════════════════════════════════════════════ */
 @media(max-width:900px){.hukum-row{grid-template-columns:repeat(2,1fr)}}
+@media (orientation: portrait) {
+  html,body{overflow:auto !important;height:auto !important}
+  .stage{height:auto !important;min-height:100vh;overflow:visible !important}
+  .surat-row{flex:none}
+}
 @media(max-width:768px){
   html,body{overflow:auto !important;height:auto !important}
   .stage{height:auto !important;min-height:100vh;overflow:visible !important;padding:12px;gap:16px}
