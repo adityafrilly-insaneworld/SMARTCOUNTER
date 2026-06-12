@@ -778,6 +778,8 @@ tr.tbl-empty td{
   .conn-status span:not(.conn-dot){display:none}
   .conn-status{padding:3px 6px}
   .topbar-title .ttl-sub{display:none !important}
+  .topbar-title{min-width:0}
+  .topbar-title span:not(.ttl-ic){overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .overlay{padding:8px !important}
   .bdg-txt{display:none}
   .bdg-txt-short{display:inline}
@@ -933,7 +935,6 @@ tr.tbl-empty td{
     <div class="topbar-actions">
       <div class="conn-status conn-connecting" id="conn-status"><span class="conn-dot">🟡</span><span>Menghubungkan...</span></div>
       <button class="btn btn-sm btn-ghost" onclick="window.open('SmartCounter_scoreboard.html','_blank')" title="Buka Scoreboard TV">📺 <span>Scoreboard</span></button>
-      <button class="btn btn-sm btn-ghost" onclick="exportDB()" title="Export JSON">📤 <span>Backup</span></button>
       <button class="theme-icon-btn" id="theme-btn" onclick="toggleTheme()" title="Ganti tema gelap/terang" aria-label="Toggle tema">
         <div class="theme-icon-wrap" id="theme-icon-wrap">
           <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -1403,6 +1404,7 @@ function cleanRecord(rec){
   const keep = KAT[rec.kategori]?.f;
   const cleaned = {...rec};
   ALL_FIELDS.forEach(f => { if(f !== keep) delete cleaned[f]; });
+  Object.keys(cleaned).forEach(k => { if(cleaned[k] === undefined) delete cleaned[k]; });
   return cleaned;
 }
 
