@@ -1289,6 +1289,21 @@ tr.tbl-empty td{
       <div class="fg" style="margin-bottom:12px">
         <label class="fl">Uraian <span class="req">*</span></label>
         <input class="fc" id="mr-ur" placeholder="Uraian singkat dokumen...">
+        <datalist id="sk-uraian-list">
+          <option value="Surat Keterangan Domisili">
+          <option value="Surat Keterangan Tidak Mampu">
+          <option value="Surat Keterangan Usaha">
+          <option value="Surat Keterangan Pekerjaan">
+          <option value="Surat Keterangan Kependudukan">
+          <option value="Surat Keterangan Kehilangan">
+          <option value="Surat Keterangan Penghasilan">
+          <option value="Surat Keterangan Status Pernikahan">
+          <option value="Surat Keterangan Nama">
+          <option value="Surat Keterangan Berkelakuan Baik">
+          <option value="Surat Keterangan Kepemilikan">
+          <option value="Surat Keterangan Jaminan">
+          <option value="Surat Keterangan Lainnya">
+        </datalist>
       </div>
       <div class="fg" style="margin-bottom:12px">
         <label class="fl">Keterangan</label>
@@ -1444,6 +1459,18 @@ function cleanRecord(rec){
   ALL_FIELDS.forEach(f => { if(f !== keep) delete cleaned[f]; });
   Object.keys(cleaned).forEach(k => { if(cleaned[k] === undefined) delete cleaned[k]; });
   return cleaned;
+}
+
+function setUraianInputMode(inputId, kat){
+  const el=document.getElementById(inputId);
+  if(!el) return;
+  if(kat==='SK'){
+    el.setAttribute('list','sk-uraian-list');
+    el.placeholder='Pilih atau ketik uraian sendiri...';
+  }else{
+    el.removeAttribute('list');
+    el.placeholder=inputId==='mr-ur'?'Uraian singkat dokumen...':'Uraian singkat...';
+  }
 }
 
 // ── Offline cache (localStorage mirror) ──────────
@@ -1608,6 +1635,22 @@ function fmtNo(k,no,yr){return String(no).padStart(3,'0')+'/'+(yr||db.konfig.ta)
 const esc=s=>String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 const fdate=s=>{if(!s)return'—';const d=new Date(s+'T00:00:00');return d.toLocaleDateString('id-ID',{day:'2-digit',month:'2-digit',year:'numeric'});};
 const fdateS=s=>{if(!s)return'—';const d=new Date(s+'T00:00:00');return d.toLocaleDateString('id-ID',{day:'2-digit',month:'short'});};
+function dateTs(s){
+  const n=Date.parse((s||'')+'T00:00:00');
+  return Number.isNaN(n)?0:n;
+}
+function createdTs(s){
+  const n=Date.parse(s||'');
+  return Number.isNaN(n)?0:n;
+}
+function sortKatRows(kat,a,b){
+  if(kat==='SK'){
+    return dateTs(b.tanggal)-dateTs(a.tanggal)
+      || (b.nomor_urut||0)-(a.nomor_urut||0)
+      || createdTs(b.created_at)-createdTs(a.created_at);
+  }
+  return (a.nomor_urut||0)-(b.nomor_urut||0);
+}
 const bdg=k=>`<span class="bdg bdg-${k.toLowerCase()}" title="${KAT[k].lbl}">${KAT[k].ic} <span class="bdg-txt">${KAT[k].lbl}</span><span class="bdg-txt-short">${k}</span></span>`;
 const emptyTr=(cols,msg,sub)=>`<tr class="tbl-empty"><td colspan="${cols}"><span class="empty-ic">📁</span><div class="empty-tx">${msg||'Belum ada data'}</div>${sub?`<div style="font-size:11.5px">${sub}</div>`:''}</td></tr>`;
 
@@ -1703,6 +1746,7 @@ window.selectQaddKat=function(k){
   document.getElementById('df-f3l').textContent=kat.fl;
   document.getElementById('df-f3').placeholder=kat.ph;
   document.getElementById('df-f3w').style.display=k?'':'none';
+  setUraianInputMode('df-ur',k);
 };
 
 let dfFile=null;
@@ -1724,6 +1768,7 @@ window.simpanDf=async function(){
 window.resetDf=function(){
   document.getElementById('df-f3').value='';
   document.getElementById('df-ur').value='';
+  setUraianInputMode('df-ur',qaddKat);
   document.getElementById('df-tgl').value=new Date().toISOString().split('T')[0];
   document.getElementById('df-alert').className='alrt hide';
   closeQaddPopup();
@@ -1830,7 +1875,7 @@ function renderKatPage(kat,pk){
     if(bln && String(r.bulan)!==String(bln)) return false;
     if(q && !r.uraian.toLowerCase().includes(q) && !(r[k.f]||'').toLowerCase().includes(q)) return false;
     return true;
-  }).sort((a,b)=>a.nomor_urut-b.nomor_urut);
+  }).sort((a,b)=>sortKatRows(kat,a,b));
 
   const ln=lastNo(kat,ay);
   const blnLabel=bln?` — ${BLN_NAMES[parseInt(bln)]}`:'' ;
@@ -1926,10 +1971,12 @@ window.openAdd=function(kat){
   mrFile=null;
   if(kat){const k=KAT[kat];document.getElementById('mr-ttl').innerHTML=`${k.ic} Tambah ${k.lbl}`;document.getElementById('mr-f3l').textContent=k.fl;document.getElementById('mr-f3').placeholder=k.ph;document.getElementById('mr-f3w').style.display='';}
   else{document.getElementById('mr-ttl').textContent='Tambah Register Baru';document.getElementById('mr-f3w').style.display='none';}
+  setUraianInputMode('mr-ur',kat);
   document.getElementById('modal-reg').classList.add('open');
 };
 window.onMrKat=function(){
   const kat=document.getElementById('mr-kat').value;
+  setUraianInputMode('mr-ur',kat);
   if(!kat){document.getElementById('mr-f3w').style.display='none';return;}
   const k=KAT[kat];
   document.getElementById('mr-ttl').innerHTML=`${k.ic} Tambah ${k.lbl}`;
@@ -1956,6 +2003,7 @@ window.editReg=function(id){
   document.getElementById('mr-f3l').textContent=k.fl;
   document.getElementById('mr-f3').placeholder=k.ph;
   document.getElementById('mr-f3w').style.display='';
+  setUraianInputMode('mr-ur',r.kategori);
   document.getElementById('modal-reg').classList.add('open');
 };
 window.onMrFile=function(inp){
